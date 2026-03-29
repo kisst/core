@@ -1,19 +1,18 @@
 """Device tracker support for OPNSense routers."""
-import logging
 
 from homeassistant.components.device_tracker import DeviceScanner
-from homeassistant.components.opnsense import CONF_TRACKER_INTERFACE, OPNSENSE_DATA
 
-_LOGGER = logging.getLogger(__name__)
+from .const import CONF_TRACKER_INTERFACE, DOMAIN, LOGGER
 
 
 async def async_get_scanner(hass, config, discovery_info=None):
     """Configure the OPNSense device_tracker."""
-    interface_client = hass.data[OPNSENSE_DATA]["interfaces"]
-    scanner = OPNSenseDeviceScanner(
-        interface_client, hass.data[OPNSENSE_DATA][CONF_TRACKER_INTERFACE]
-    )
-    return scanner
+    # Find the config entry data - use the first (and typically only) entry
+    for entry_data in hass.data.get(DOMAIN, {}).values():
+        client = entry_data["client"]
+        tracker_interfaces = entry_data[CONF_TRACKER_INTERFACE]
+        return OPNSenseDeviceScanner(client, tracker_interfaces)
+    return None
 
 
 class OPNSenseDeviceScanner(DeviceScanner):
@@ -35,9 +34,9 @@ class OPNSenseDeviceScanner(DeviceScanner):
                 out_devices[device["mac"]] = device
         return out_devices
 
-    def scan_devices(self):
+    async def async_scan_devices(self):
         """Scan for new devices and return a list with found device IDs."""
-        self.update_info()
+        await self.async_update_info()
         return list(self.last_results)
 
     def get_device_name(self, device):
@@ -47,13 +46,12 @@ class OPNSenseDeviceScanner(DeviceScanner):
         hostname = self.last_results[device].get("hostname") or None
         return hostname
 
-    def update_info(self):
+    async def async_update_info(self):
         """Ensure the information from the OPNSense router is up to date.
 
         Return boolean if scanning successful.
         """
-
-        devices = self.client.get_arp()
+        devices = await self.client.get_arp()
         self.last_results = self._get_mac_addrs(devices)
 
     def get_extra_attributes(self, device):
