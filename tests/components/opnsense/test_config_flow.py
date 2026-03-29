@@ -148,9 +148,7 @@ async def test_import_flow(hass):
     ):
         client = mock_client_cls.return_value
         client.get_arp = AsyncMock(return_value=[])
-        client.get_interfaces = AsyncMock(
-            return_value={"igb0": "WAN", "igb1": "LAN"}
-        )
+        client.get_interfaces = AsyncMock(return_value={"igb0": "WAN", "igb1": "LAN"})
 
         result = await hass.config_entries.flow.async_init(
             DOMAIN,

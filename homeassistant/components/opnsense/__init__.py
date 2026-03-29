@@ -56,9 +56,7 @@ class OPNSenseClient:
     async def _get(self, endpoint):
         """Make a GET request to the OPNsense API."""
         url = f"{self._url}/{endpoint}"
-        resp = await self._session.get(
-            url, auth=self._auth, ssl=self._verify_ssl
-        )
+        resp = await self._session.get(url, auth=self._auth, ssl=self._verify_ssl)
         resp.raise_for_status()
         return await resp.json()
 
@@ -106,9 +104,7 @@ async def async_setup_entry(hass, config_entry):
         try:
             interfaces_resp = await client.get_interfaces()
         except aiohttp.ClientError:
-            LOGGER.exception(
-                "Failure while retrieving OPNsense network interfaces"
-            )
+            LOGGER.exception("Failure while retrieving OPNsense network interfaces")
             return False
         interfaces = list(interfaces_resp.values())
         for interface in tracker_interfaces:

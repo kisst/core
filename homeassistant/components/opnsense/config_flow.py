@@ -28,7 +28,8 @@ class OPNSenseConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             # Validate connection
             session = async_get_clientsession(
-                self.hass, verify_ssl=user_input.get(CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL)
+                self.hass,
+                verify_ssl=user_input.get(CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL),
             )
             url = user_input[CONF_URL].rstrip("/")
             auth = aiohttp.BasicAuth(
